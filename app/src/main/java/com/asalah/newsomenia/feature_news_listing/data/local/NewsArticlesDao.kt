@@ -24,6 +24,7 @@ interface NewsArticlesDao {
 
     @Transaction
     fun cacheArticles(articles: List<NewsArticleDb>) {
+        clearAllArticles()
         insertArticles(articles)
     }
 

@@ -23,6 +23,7 @@ class NewsViewModel @Inject constructor(
     private val newsUseCase: NewsUseCase,
     private val newsNewsRepository: INewsRepository
 ) : ViewModel() {
+
      fun getNews(
         ): Flow<PagingData<NewsArticleDb>> =
             Pager(PagingConfig(pageSize = PAGINATION_PAGE_SIZE)) {
