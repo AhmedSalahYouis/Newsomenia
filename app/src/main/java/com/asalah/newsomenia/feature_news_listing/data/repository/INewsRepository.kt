@@ -1,8 +1,11 @@
 package com.asalah.newsomenia.feature_news_listing.data.repository
 
+import android.content.Context
 import com.asalah.newsomenia.core.domain.news_items.entity.Article
 import com.asalah.newsomenia.core.domain.news_list.entity.NewsDbListResponse
 import com.asalah.newsomenia.core.domain.news_list.entity.NewsListResponse
+import com.asalah.newsomenia.core.util.constants.ApiConstants
+import com.asalah.newsomenia.core.util.network.NetworkHelper
 import com.asalah.newsomenia.feature_news_listing.data.local.NewsArticleDb
 import com.asalah.newsomenia.feature_news_listing.data.local.NewsArticlesDao
 import com.asalah.newsomenia.feature_news_listing.data.remote.NewsApi
@@ -31,7 +34,7 @@ interface INewsRepository {
      * fresh news articles from web and save into database
      * if that fails then continues showing cached data.
      */
-    fun getNewsArticles(page: Int): Flow<Response<NewsDbListResponse>>
+    suspend fun getNewsArticles(page: Int): Response<NewsDbListResponse>
 
     /**
      * Gets fresh news from web.
@@ -43,24 +46,23 @@ interface INewsRepository {
 
 @Singleton
 class DefaultNewsRepository @Inject constructor(
+    private val context:Context,
     private val newsDao: NewsArticlesDao,
     private val newsApi: NewsApi
 ) : INewsRepository {
 
-    override fun getNewsArticles(page: Int): Flow<Response<NewsDbListResponse>> = flow {
+    override suspend fun getNewsArticles(page: Int): Response<NewsDbListResponse> {
 
         //Try to fetch fresh news from web + cache if any
-        val freshNews = getNewsFromWebservice(page)
-        freshNews.body()?.articles?.map { it.toStorage() }?.let(newsDao::cacheArticles)
+        if (NetworkHelper.isNetworkConnected(context)){
+            val freshNews = getNewsFromWebservice(page)
+            freshNews.body()?.articles?.map { it.toStorage() }?.let(newsDao::cacheArticles)
 
+        }
         // Get news from cache [cache is always source of truth]
         val cachedNews = newsDao.getNewsArticles()
 
-        emitAll(listOf(Response.success(NewsDbListResponse(cachedNews))))
-    }.flowOn(Dispatchers.IO)
-
-    private fun emitAll(map: List<Any>) {
-
+        return Response.success(NewsDbListResponse(cachedNews))
     }
 
     override suspend fun getNewsFromWebservice(
@@ -68,6 +70,8 @@ class DefaultNewsRepository @Inject constructor(
     ): Response<NewsListResponse> =
         withContext(Dispatchers.IO) {
             newsApi.getNews(
+                ApiConstants.COUNTRY,
+                ApiConstants.CATEGORY,
                 page = page
             )
         }

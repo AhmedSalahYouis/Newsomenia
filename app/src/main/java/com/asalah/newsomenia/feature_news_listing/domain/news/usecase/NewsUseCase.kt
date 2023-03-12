@@ -18,7 +18,7 @@ class NewsUseCase @Inject constructor(
 ) : ApiUseCase<NewsUseCase.Params, NewsDbListResponse>(
     ioDispatcher
 ) {
-    override suspend fun execute(parameters: Params): Flow<Response<NewsDbListResponse>> =
+    override suspend fun execute(parameters: Params): Response<NewsDbListResponse> =
         newsNewsRepository.getNewsArticles(
             parameters.page
         )
