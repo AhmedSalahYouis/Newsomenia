@@ -5,8 +5,6 @@ import retrofit2.Response
 
 interface NewsRepository {
     suspend fun getNews(
-        country: String?,
-        category: String?,
         page: Int,
     ): Response<NewsListResponse>
 }

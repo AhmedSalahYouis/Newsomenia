@@ -16,6 +16,7 @@ import com.asalah.newsomenia.core.presentation.compose_components.image.AsyncIma
 import com.asalah.newsomenia.core.presentation.design_system.theme.NewsomeniaColors
 import com.asalah.newsomenia.core.presentation.design_system.theme.NewsomeniaTypography
 import com.asalah.newsomenia.core.util.time.toLocalTime
+import com.asalah.newsomenia.feature_news_listing.data.local.NewsArticleDb
 
 
 const val ARTICLE_PLACE_HOLDER = "https://www.kasandbox.org/programming-images/avatars/cs-hopper-cool.png"//placeHolder
@@ -23,7 +24,7 @@ const val ARTICLE_PLACE_HOLDER = "https://www.kasandbox.org/programming-images/a
 @Composable
 fun NewsItem(
     modifier: Modifier = Modifier,
-    article: Article?
+    article: NewsArticleDb?
 ) {
     ConstraintLayout(
         modifier = modifier

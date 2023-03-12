@@ -23,7 +23,7 @@ fun NewsScreen(
 ) {
 
     val newsList =
-        viewModel.getNews("us","entertainment")
+        viewModel.getNews()
             .collectAsLazyPagingItems()
 
 
@@ -51,7 +51,7 @@ fun NewsScreen(
                             .wrapContentHeight()
                             .wrapContentWidth()
                             .padding(8.dp),
-                        text = stringResource(id = R.string.news),
+                        text = stringResource(id = R.string.no_data),
                         color = NewsomeniaColors.designSystem.Neutral30,
                         style = NewsomeniaTypography.text14
                     )
@@ -60,7 +60,6 @@ fun NewsScreen(
                     NewsItem(article = newsList[it])
                 }
             }
-
             item {
                 PagingLoadingState(pagingItems = newsList)
             }

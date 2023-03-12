@@ -5,6 +5,8 @@ import com.asalah.newsomenia.core.domain.common.entity.GeneralError
 import com.asalah.newsomenia.core.util.log.showLog
 import com.asalah.newsomenia.core.util.network.ApiResult
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.withContext
 import retrofit2.Response
 
@@ -20,25 +22,28 @@ abstract class ApiUseCase<in P, R>(private val coroutineDispatcher: CoroutineDis
         return try {
             withContext(coroutineDispatcher) {
                 execute(parameters).let {
-                    showLog("api raw", it.raw().toString())
-                    if (it.isSuccessful) {
-                        if (it.code() == 204 || it.code() == 205) {
-                            ApiResult.SuccessNoContent
+                    val response = it.collect(){
+                        showLog("api raw", it.raw().toString())
+                        if (it.isSuccessful) {
+                            if (it.code() == 204 || it.code() == 205) {
+                                ApiResult.SuccessNoContent
+                            } else {
+                                ApiResult.Success(it.body()!!)
+                            }
                         } else {
-                            ApiResult.Success(it.body()!!)
-                        }
-                    } else {
-                        try {
-                            val errorBody = it.errorBody()?.string() ?: "Unknown HTTP error body"
-                            val moshi = Moshi.Builder().build()
-                            val adapter = moshi.adapter(Object::class.java)
-                            val errorMessage = adapter.fromJson(errorBody)
-                            showLog("api server error", errorMessage.toString())
-                            ApiResult.ServerError(errorMessage as GeneralError)
-                        } catch (exception: Exception) {
-                            ApiResult.Error(Exception("Unknown Error"))
+                            try {
+                                val errorBody = it.errorBody()?.string() ?: "Unknown HTTP error body"
+                                val moshi = Moshi.Builder().build()
+                                val adapter = moshi.adapter(Object::class.java)
+                                val errorMessage = adapter.fromJson(errorBody)
+                                showLog("api server error", errorMessage.toString())
+                                ApiResult.ServerError(errorMessage as GeneralError)
+                            } catch (exception: Exception) {
+                                ApiResult.Error(Exception("Unknown Error"))
+                            }
                         }
                     }
+                    ApiResult.Error(Exception("Unknown Error"))
                 }
             }
         } catch (e: Exception) {
@@ -51,5 +56,5 @@ abstract class ApiUseCase<in P, R>(private val coroutineDispatcher: CoroutineDis
      * Override this to set the code to be executed.
      */
     @Throws(RuntimeException::class)
-    protected abstract suspend fun execute(parameters: P): Response<R>
+    protected abstract suspend fun execute(parameters: P): Flow<Response<R>>
 }

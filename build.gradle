@@ -6,6 +6,7 @@ buildscript {
         lifecycle_version = '2.4.0'
         accompanist_navigation = '0.29.1-alpha'
         paging_version = '1.0.0-alpha17'
+        roomVersion = '2.2.5'
     }
     repositories {
         mavenCentral()
